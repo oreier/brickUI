@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Visualization</title>
+    <script type="module">
+        import init, { VisualizerWrapper } from './pkg/wasm_graph_visualizer.js';
+
+        async function run() {
+            // Initialize the WASM
+            await init();
+
+            // Create a Visualizer instance from the Rust code
+            const visualizer = new VisualizerWrapper();
+
+            // Set up vis.js for graph rendering
+            const container = document.getElementById('graph-container');
+
+            const nodes = new vis.DataSet([
+                { id: 1, label: 'Node 1' },
+                { id: 2, label: 'Node 2' },
+                { id: 3, label: 'Node 3' },
+            ]);
+
+            const edges = new vis.DataSet([
+                { from: 1, to: 2, label: 'Edge 1-2' },
+                { from: 2, to: 3, label: 'Edge 2-3' },
+            ]);
+
+            const data = { nodes, edges };
+            const options = {};
+
+            const network = new vis.Network(container, data, options);
+
+            // Handle node clicks and update SPARQL query in Rust
+            network.on('click', function (event) {
+                const clickedNode = event.nodes[0]; // Get the node ID
+                const nodeLabel = nodes.get(clickedNode).label;
+
+                // Pass the clicked node to Rust and update the SPARQL query
+                visualizer.onNodeClick(nodeLabel);
+            });
+        }
+
+        run();
+    </script>
+</head>
+<body>
+    <div id="graph-container" style="width: 800px; height: 600px;"></div>
+</body>
+</html>
